@@ -1,13 +1,11 @@
-# register model
+# register model (adds the "staging" alias to the version registered during evaluation)
 
 import json
-from xmlrpc import client
-import mlflow
 import logging
+import mlflow
 import dagshub
 
 dagshub.init(repo_owner='PreetiPoriya', repo_name='mlops-mini-project', mlflow=True)
-
 
 # logging configuration
 logger = logging.getLogger('model_registration')
@@ -40,33 +38,29 @@ def load_model_info(file_path: str) -> dict:
         logger.error('Unexpected error occurred while loading the model info: %s', e)
         raise
 
-def register_model(model_name: str, model_info: dict):
-    """Register the model to the MLflow Model Registry."""
+def set_staging_alias(model_name: str, model_info: dict):
+    """Add the 'staging' alias to the version created by this run."""
     try:
-        model_uri = f"runs:/{model_info['run_id']}/{model_info['model_path']}"
-        
-        # Register the model
-        model_version = mlflow.register_model(model_uri, model_name)
-        
-        # Transition the model to "Staging" stage
         client = mlflow.tracking.MlflowClient()
-        client.set_registered_model_alias(model_name, "staging", model_version.version)
-        
-        logger.debug(f'Model {model_name} version {model_version.version} registered and transitioned to Staging.')
+        versions = client.search_model_versions(f"name='{model_name}'")
+
+        # Prefer the version created by this run, otherwise take the latest
+        match = [v for v in versions if v.run_id == model_info['run_id']]
+        version = match[0] if match else max(versions, key=lambda v: int(v.version))
+
+        client.set_registered_model_alias(model_name, "staging", version.version)
+        logger.debug('Model %s version %s aliased as staging.', model_name, version.version)
     except Exception as e:
-        logger.error('Error during model registration: %s', e)
+        logger.error('Error while setting the staging alias: %s', e)
         raise
 
 def main():
     try:
-        model_info_path = 'reports/experiment_info.json'
-        model_info = load_model_info(model_info_path)
-        
-        model_name = "my_model"
-        register_model(model_name, model_info)
+        model_info = load_model_info('reports/experiment_info.json')
+        set_staging_alias("my_model", model_info)
     except Exception as e:
         logger.error('Failed to complete the model registration process: %s', e)
-        print(f"Error: {e}")
+        raise  # makes the DVC stage fail visibly instead of reporting success
 
 if __name__ == '__main__':
     main()
