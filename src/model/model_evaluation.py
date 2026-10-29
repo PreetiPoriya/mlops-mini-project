@@ -78,22 +78,18 @@ def load_data(file_path: str) -> pd.DataFrame:
 def evaluate_model(clf, X_test: np.ndarray, y_test: np.ndarray) -> dict:
     """Evaluate the model and return the evaluation metrics."""
     try:
-        # Convert text labels to 1/0 (happiness = positive class)
-        y_true = (y_test == 'happiness').astype(int)
-        y_pred = (clf.predict(X_test) == 'happiness').astype(int)
-        happy_idx = list(clf.classes_).index('happiness')
-        y_pred_proba = clf.predict_proba(X_test)[:, happy_idx]
+        classes = list(clf.classes_)
+        positive = 'happiness' if 'happiness' in classes else 1
 
-        accuracy = accuracy_score(y_true, y_pred)
-        precision = precision_score(y_true, y_pred)
-        recall = recall_score(y_true, y_pred)
-        auc = roc_auc_score(y_true, y_pred_proba)
+        y_true = (y_test == positive).astype(int)
+        y_pred = (clf.predict(X_test) == positive).astype(int)
+        y_pred_proba = clf.predict_proba(X_test)[:, classes.index(positive)]
 
         metrics_dict = {
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'auc': auc
+            'accuracy': accuracy_score(y_true, y_pred),
+            'precision': precision_score(y_true, y_pred),
+            'recall': recall_score(y_true, y_pred),
+            'auc': roc_auc_score(y_true, y_pred_proba)
         }
         logger.debug('Model evaluation metrics calculated')
         return metrics_dict
