@@ -22,6 +22,7 @@ mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 
 app = Flask(__name__)
 
+
 # load model from model registry using the "staging" alias
 model_name = "my_model"
 model = mlflow.pyfunc.load_model(f"models:/{model_name}@production")
