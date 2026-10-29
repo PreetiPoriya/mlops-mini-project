@@ -20,20 +20,20 @@ class TestModelLoading(unittest.TestCase):
         os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
         dagshub_url = "https://dagshub.com"
-        repo_owner = "campusx-official"
-        repo_name = "mlops-project-2"
+        repo_owner = "PreetiPoriya"
+        repo_name = "mlops-mini-project"
 
         # Set up MLflow tracking URI
         mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 
-        # Load the new model from MLflow model registry
+        # Load the model that has the "staging" alias
         cls.new_model_name = "my_model"
-        cls.new_model_version = cls.get_latest_model_version(cls.new_model_name)
-        cls.new_model_uri = f'models:/{cls.new_model_name}/{cls.new_model_version}'
+        cls.new_model_uri = f'models:/{cls.new_model_name}@staging'
         cls.new_model = mlflow.pyfunc.load_model(cls.new_model_uri)
 
         # Load the vectorizer
-        cls.vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+        with open('models/vectorizer.pkl', 'rb') as f:
+            cls.vectorizer = pickle.load(f)
 
         # Load holdout test data
         cls.holdout_data = pd.read_csv('data/processed/test_bow.csv')
