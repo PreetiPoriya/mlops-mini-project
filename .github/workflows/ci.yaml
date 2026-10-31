@@ -120,6 +120,7 @@ jobs:
       #       docker rm my-app || true
       #       docker run -d -p 80:5000 -e DAGSHUB_PAT=${{ secrets.DAGSHUB_PAT }} --name campusx-app 992382647488.dkr.ecr.ap-southeast-2.amazonaws.com/campusx_ecr:latest
 
+
       - name: Deploy to EC2
         if: success() && github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1.0.3
