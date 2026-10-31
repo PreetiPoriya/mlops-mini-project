@@ -93,11 +93,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t mlops-mini-project_ecr .
+          docker build -t mlops-mini-project-ecr .
 
       - name: Tag Docker image
         run: |
-          docker tag mlops-mini-project_ecr:latest 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project_ecr:v1
+          docker tag mlops-mini-project-ecr:latest 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project-ecr:v1
 
       - name: Push Docker image to AWS ECR
         run: |
@@ -129,7 +129,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 784917519329.dkr.ecr.eu-north-1.amazonaws.com
-            docker pull 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project_ecr:v1
+            docker pull 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project-ecr:v1
             docker rm -f mlops-mini-project || true
-            docker run -d --restart unless-stopped -p 80:5000 --name mlops-mini-project -e DAGSHUB_PAT=${{ secrets.DAGSHUB_PAT }} 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project_ecr:v1
+            docker run -d --restart unless-stopped -p 80:5000 --name mlops-mini-project -e DAGSHUB_PAT=${{ secrets.DAGSHUB_PAT }} 784917519329.dkr.ecr.eu-north-1.amazonaws.com/mlops-mini-project-ecr:v1
             docker image prune -f
